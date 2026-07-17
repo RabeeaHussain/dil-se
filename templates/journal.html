@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Journal - Dil Se{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="section-title">📝 Your Journal</div>
+    <p class="section-subtitle">A private space for your thoughts and reflections</p>
+</div>
+
+<!-- New Entry Form -->
+<div class="card" style="margin-bottom: 2rem;">
+    <h2 style="color: var(--deep-blue); margin-bottom: 1rem;">Write a New Entry</h2>
+    
+    <div class="form-group">
+        <label>Select a Prompt (optional)</label>
+        <div id="journalPrompts" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem;">
+            <!-- Prompts will be loaded here -->
+        </div>
+    </div>
+    
+    <form id="journalForm">
+        <div class="form-group">
+            <label for="journalContent">Your Thoughts</label>
+            <textarea 
+                id="journalContent" 
+                placeholder="Write freely. No one but you will see this..." 
+                required
+            ></textarea>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+                <label for="journalMood">How are you feeling?</label>
+                <select id="journalMood">
+                    <option value="">Select mood (optional)</option>
+                    <option value="1">😢 Terrible</option>
+                    <option value="2">😞 Bad</option>
+                    <option value="3">😐 Okay</option>
+                    <option value="4">🙂 Good</option>
+                    <option value="5">😊 Great</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; align-items: flex-end;">
+                <button type="submit" class="btn btn-primary btn-block">Save Entry</button>
+            </div>
+        </div>
+    </form>
+    
+    <div id="journalSuccess" class="hidden" style="padding: 1rem; background: var(--primary-blue); border-radius: 8px; color: var(--deep-blue); text-align: center; margin-top: 1rem;">
+        ✓ Entry saved! This is your space.
+    </div>
+</div>
+
+<!-- Previous Entries -->
+<div class="section">
+    <h2 class="section-title">Your Entries</h2>
+    <div id="journalEntries">
+        <div class="empty-state">
+            <div class="empty-state-icon">📚</div>
+            <p>No entries yet. Start by writing one today!</p>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div id="editJournalModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>Edit Entry</h2>
+            <button class="modal-close" onclick="closeEditModal()">&times;</button>
+        </div>
+        
+        <form id="editJournalForm">
+            <input type="hidden" id="editEntryId">
+            
+            <div class="form-group">
+                <label for="editJournalContent">Your Thoughts</label>
+                <textarea id="editJournalContent" required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="editJournalMood">Mood</label>
+                <select id="editJournalMood">
+                    <option value="">Select mood (optional)</option>
+                    <option value="1">😢 Terrible</option>
+                    <option value="2">😞 Bad</option>
+                    <option value="3">😐 Okay</option>
+                    <option value="4">🙂 Good</option>
+                    <option value="5">😊 Great</option>
+                </select>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-primary btn-block">Save Changes</button>
+                <button type="button" class="btn btn-secondary btn-block" onclick="closeEditModal()">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Journal Tips -->
+<div class="card" style="background: var(--primary-purple); margin-top: 2rem;">
+    <h3 style="color: var(--deep-blue); margin-bottom: 1rem;">💭 Journaling Tips</h3>
+    <ul style="color: var(--dark-gray); margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+        <li><strong>Write freely</strong> — there's no perfect way to journal</li>
+        <li><strong>Be honest</strong> — this is only for you</li>
+        <li><strong>No editing</strong> — let thoughts flow naturally</li>
+        <li><strong>Any length</strong> — one sentence or ten pages</li>
+        <li><strong>Regular practice</strong> — even short entries help</li>
+    </ul>
+</div>
+
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/journal.js') }}"></script>
+{% endblock %}

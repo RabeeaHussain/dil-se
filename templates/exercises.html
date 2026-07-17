@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Exercises - Dil Se{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="section-title">🧘 Wellness Exercises</div>
+    <p class="section-subtitle">Simple techniques to calm your mind and body</p>
+</div>
+
+<div class="grid grid-2" id="exercisesList">
+    <!-- Exercises will be loaded here -->
+</div>
+
+<!-- Exercise Modal -->
+<div id="exerciseModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="exerciseTitle">Exercise Title</h2>
+            <button class="modal-close" onclick="closeExerciseModal()">&times;</button>
+        </div>
+        
+        <div id="exerciseDetails">
+            <!-- Exercise details will be populated here -->
+        </div>
+        
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button class="btn btn-primary btn-block" id="startExerciseBtn">Start Exercise</button>
+            <button class="btn btn-secondary btn-block" onclick="closeExerciseModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Exercise Progress Modal -->
+<div id="exerciseProgressModal" class="modal">
+    <div class="modal-content" style="text-align: center;">
+        <h2 id="exerciseProgressTitle" style="color: var(--deep-blue); margin-bottom: 2rem;">Exercise in Progress</h2>
+        
+        <div id="exerciseProgressContent">
+            <!-- Content varies by exercise -->
+        </div>
+        
+        <div style="margin-top: 2rem;">
+            <button class="btn btn-success btn-block" id="completeExerciseBtn">Complete Exercise</button>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/exercises.js') }}"></script>
+{% endblock %}

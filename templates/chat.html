@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Chat - Dil Se{% endblock %}
+
+{% block content %}
+<div class="section">
+    <div class="section-title">💬 Talk to Dil Se</div>
+    <p class="section-subtitle">A judgment-free space to share what's on your mind</p>
+</div>
+
+<div class="chat-container">
+    <div class="chat-messages" id="chatMessages">
+        <div class="message bot">
+            <div class="message-bubble">
+                Hi there! I'm Dil Se, your mental wellness companion. What's on your mind today? Feel free to share anything—there's no judgment here.
+            </div>
+        </div>
+    </div>
+    
+    <div class="chat-input-area">
+        <form class="chat-input-form" id="chatForm">
+            <input 
+                type="text" 
+                id="chatInput" 
+                placeholder="Type your message here..." 
+                autocomplete="off"
+                required
+            >
+            <button type="submit" class="btn btn-primary">Send</button>
+        </form>
+        
+        <div class="quick-replies" id="quickReplies">
+            <!-- Quick replies will be populated here -->
+        </div>
+    </div>
+</div>
+
+<!-- Chat Tips -->
+<div class="card" style="margin-top: 2rem; background: var(--primary-blue);">
+    <h3 style="color: var(--deep-blue); margin-bottom: 1rem;">💭 Tips for Better Conversations</h3>
+    <ul style="color: var(--dark-gray); margin: 0; padding-left: 1.5rem;">
+        <li>Be honest about how you're feeling</li>
+        <li>There's no right or wrong thing to say</li>
+        <li>Dil Se is here to listen, not judge</li>
+        <li>If you need professional help, I'll let you know</li>
+    </ul>
+</div>
+
+<script src="{{ url_for('static', filename='js/api.js') }}"></script>
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}
