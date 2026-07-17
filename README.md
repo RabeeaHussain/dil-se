@@ -13,7 +13,7 @@ A culturally-tailored mental wellness app for Pakistani teens and young adults, 
 ### Prerequisites
 - Python 3.8+
 - pip (Python package manager)
-- An Anthropic API key (get one at [console.anthropic.com](https://console.anthropic.com))
+- An `AI_API_KEY` for the Groq-powered chatbot
 
 ### Installation
 
@@ -38,8 +38,8 @@ pip install -r requirements.txt
 # Copy the example file
 cp .env.example .env
 
-# Edit .env and add your Anthropic API key
-# ANTHROPIC_API_KEY=sk-ant-...
+# Edit .env and add your chatbot API key
+# AI_API_KEY=...
 ```
 
 5. **Initialize the database**
@@ -75,7 +75,7 @@ The app will be available at: **http://localhost:5000**
 - **Quick Access Cards** - Navigation to Chat, Exercises, and Journal
 
 ### 💬 Chat Screen
-- **Conversational AI Chatbot** - Powered by Anthropic Claude
+- **Conversational AI Chatbot** - Powered by Groq with a Llama model
 - **Context-Aware Responses** - Tailored to Pakistani youth experiences
 - **Quick Reply Suggestions** - Pre-set options for common situations
 - **Language Toggle** - English (default) or Hinglish
@@ -156,7 +156,7 @@ Accent Red:        #E8A9A9  (gentle alerts)
 
 ## 🤖 Chatbot Configuration
 
-The chatbot uses Anthropic's Claude API with a specialized system prompt for Pakistani youth mental wellness.
+The chatbot uses Groq with a Llama model and a specialized system prompt for Pakistani youth mental wellness.
 
 ### Key Features:
 - **Non-judgmental** - No shame-based language
@@ -299,9 +299,7 @@ gunicorn -w 4 -b 0.0.0.0:5000 app:app
 
 ### Running Tests
 ```bash
-# Currently no automated tests; add pytest for testing
-pip install pytest
-pytest
+python -m unittest discover -s tests -v
 ```
 
 ### Database Migrations
@@ -364,7 +362,7 @@ Dil Se is a wellness companion, not a therapy platform. If you or someone you kn
 - **International Crisis:** Find local resources
 
 ### API Rate Limits
-Anthropic API has rate limits. Monitor usage in your dashboard.
+Groq API has rate limits. Monitor usage in your dashboard.
 
 ---
 
@@ -384,7 +382,7 @@ Created: May 2026
 
 ## 🙏 Acknowledgments
 
-- Anthropic for the Claude API
+- Groq for the chatbot API
 - Pakistani mental health communities
 - All resources on cultural competency in mental health
 
