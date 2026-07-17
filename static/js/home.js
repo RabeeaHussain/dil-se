@@ -1,16 +1,23 @@
 /* ==================== Home Page JS ==================== */
 
-const userId = localStorage.getItem('user_id');  
 
 document.addEventListener('DOMContentLoaded', function() {
-    if (!userId) {
-        window.location.href = '/auth';
-        return;
-    }
-    loadMoodSelector();
-    loadMoodHistory();
-    loadStreak();
-    loadDailyTip();
+    const startHomeExperience = () => {
+        loadMoodSelector();
+        loadMoodHistory();
+        loadStreak();
+        loadDailyTip();
+        loadMoodPrediction();
+    };
+
+    const ready = window.userReadyPromise || Promise.resolve();
+    ready.then(() => {
+        if (!userId) {
+            window.location.href = '/auth';
+            return;
+        }
+        startHomeExperience();
+    });
 });
 
 const moodOptions = [
@@ -42,6 +49,7 @@ function loadMoodSelector() {
             document.getElementById('moodForm').classList.remove('hidden');
         }
     });
+
     
     // Handle form submission
     document.getElementById('moodForm').addEventListener('submit', function(e) {
@@ -55,9 +63,10 @@ function loadMoodSelector() {
                     document.getElementById('moodSuccess').classList.remove('hidden');
                     document.getElementById('moodForm').classList.add('hidden');
                     
-                    // Reset
-                    setTimeout(() => {
-                        location.reload();
+                   setTimeout(() => {
+                        loadMoodHistory();
+                        loadStreak();
+                        loadMoodPrediction();
                     }, 2000);
                 }
             })
@@ -65,6 +74,30 @@ function loadMoodSelector() {
     });
 }
 
+function loadMoodPrediction() {
+    if (!userId) return;
+    fetch(`/api/user/${userId}/mood-prediction`)
+        .then(r => r.json())
+        .then(data => {
+            const card = document.getElementById('predictionCard');
+            const text = document.getElementById('predictionText');
+            const trend = document.getElementById('predictionTrend');
+            if (card && data.predicted_mood) {
+                card.style.display = 'block';
+                text.textContent = data.message;
+                trend.textContent = `Trend: ${data.trend}`;
+            } else if (card && data.message) {
+                card.style.display = 'block';
+                text.textContent = data.message;
+            }
+        })
+        .catch(error => {
+            if ((error && error.message && error.message.includes('404')) || error?.status === 404) {
+                return;
+            }
+            handleApiError(error);
+        });
+}
 function loadMoodHistory() {
     API.getMoodHistory(userId, 7)
         .then(data => {

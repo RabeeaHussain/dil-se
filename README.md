@@ -56,6 +56,14 @@ python app.py
 
 The app will be available at: **http://localhost:5000**
 
+## 🔁 Recent Changes
+
+- **Auth-first startup**: The app now opens the authentication screen by default when no session user exists. An anonymous session user is created automatically if you continue without signing up.
+- **Dashboard layout**: Home dashboard now uses a wider left column for mood check-in and streak/history, with a narrower right column for the mood forecast — this gives the prediction card more breathing room.
+- **Mood prediction UX**: Mood prediction requests are more resilient to stale local state and will be skipped until a valid session user is available.
+- **Tests added**: Basic unit tests were added for the mood predictor and route fallback behavior, helping prevent regressions.
+
+
 ---
 
 ## 📱 Features Overview

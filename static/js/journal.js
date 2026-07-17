@@ -1,6 +1,12 @@
 /* ==================== Journal Page JS ==================== */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function () {
+    if (window.userReadyPromise) {
+        await window.userReadyPromise;
+    }
+
+    console.log("Journal User ID:", userId);
+
     loadJournalPrompts();
     loadJournalEntries();
     setupJournalForm();
@@ -23,6 +29,15 @@ function setupJournalForm() {
         
         const moodInt = mood ? parseInt(mood) : null;
         
+        if (!userId) {
+            showNotification("Please log in again.", "error");
+            return;
+        }
+        console.log("Journal page userId:", userId);
+        console.log("localStorage userId:", localStorage.getItem("userId"));
+        console.log("localStorage user_id:", localStorage.getItem("user_id"));
+
+
         API.createJournalEntry(userId, content, moodInt)
             .then(data => {
                 if (data.success) {
@@ -71,6 +86,11 @@ function loadJournalPrompts() {
 }
 
 function loadJournalEntries() {
+    if (!userId) {
+        console.error("User ID is null");
+        return;
+    }
+
     API.getJournalEntries(userId, 90)
         .then(data => {
             const container = document.getElementById('journalEntries');

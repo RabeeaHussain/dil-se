@@ -1,6 +1,11 @@
+import importlib.util
 import os
 from dotenv import load_dotenv
-from groq import Groq
+
+if importlib.util.find_spec("groq") is not None:  # pragma: no cover - optional dependency path
+    from groq import Groq
+else:
+    Groq = None
 
 load_dotenv()
 
@@ -15,6 +20,8 @@ class DilSeChatbot:
         api_key = os.getenv("AI_API_KEY")
         if not api_key:
             raise ValueError("AI_API_KEY not set")
+        if Groq is None:
+            raise ValueError("groq package is not installed")
         self.client = Groq(api_key=api_key)
 
     def get_response(self, message, language="english", conversation_history=None):

@@ -8,60 +8,70 @@
     <p class="section-subtitle">A safe space to check in with yourself</p>
 </div>
 
-<div class="grid grid-2">
-    <!-- Mood Check-in -->
-    <div class="card">
-        <h2 style="color: var(--deep-blue); margin-bottom: 1rem;">How are you feeling today?</h2>
-        
-        <div class="mood-selector" id="moodSelector">
-            <button class="mood-option" data-mood="1">
-                <div>😢</div>
-                <div class="label">Terrible</div>
-            </button>
-            <button class="mood-option" data-mood="2">
-                <div>😞</div>
-                <div class="label">Bad</div>
-            </button>
-            <button class="mood-option" data-mood="3">
-                <div>😐</div>
-                <div class="label">Okay</div>
-            </button>
-            <button class="mood-option" data-mood="4">
-                <div>🙂</div>
-                <div class="label">Good</div>
-            </button>
-            <button class="mood-option" data-mood="5">
-                <div>😊</div>
-                <div class="label">Great</div>
-            </button>
-        </div>
-        
-        <form id="moodForm" class="hidden">
-            <div class="form-group">
-                <label for="moodNote">Anything on your mind? (optional)</label>
-                <textarea id="moodNote" placeholder="Type your thoughts here..."></textarea>
+<div class="dashboard-layout">
+    <div class="dashboard-main-column">
+        <!-- Mood Check-in -->
+        <div class="card">
+            <h2 style="color: var(--deep-blue); margin-bottom: 1rem;">How are you feeling today?</h2>
+            
+            <div class="mood-selector" id="moodSelector">
+                <button class="mood-option" data-mood="1">
+                    <div>😢</div>
+                    <div class="label">Terrible</div>
+                </button>
+                <button class="mood-option" data-mood="2">
+                    <div>😞</div>
+                    <div class="label">Bad</div>
+                </button>
+                <button class="mood-option" data-mood="3">
+                    <div>😐</div>
+                    <div class="label">Okay</div>
+                </button>
+                <button class="mood-option" data-mood="4">
+                    <div>🙂</div>
+                    <div class="label">Good</div>
+                </button>
+                <button class="mood-option" data-mood="5">
+                    <div>😊</div>
+                    <div class="label">Great</div>
+                </button>
             </div>
-            <button type="submit" class="btn btn-primary btn-block">Save Check-in</button>
-        </form>
-        
-        <div id="moodSuccess" class="hidden" style="padding: 1rem; background: var(--primary-blue); border-radius: 8px; color: var(--deep-blue); text-align: center; margin-top: 1rem;">
-            ✓ Check-in saved! Keep it up!
+            
+            <form id="moodForm" class="hidden">
+                <div class="form-group">
+                    <label for="moodNote">Anything on your mind? (optional)</label>
+                    <textarea id="moodNote" placeholder="Type your thoughts here..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Save Check-in</button>
+            </form>
+            
+            <div id="moodSuccess" class="hidden" style="padding: 1rem; background: var(--primary-blue); border-radius: 8px; color: var(--deep-blue); text-align: center; margin-top: 1rem;">
+                ✓ Check-in saved! Keep it up!
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="card" style="margin-top: 1.5rem;">
+            <div class="stat-box">
+                <div class="stat-label">Current Streak</div>
+                <div class="streak-counter" id="streakCounter">0</div>
+                <div class="stat-label">days</div>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <h3 style="color: var(--deep-blue); margin-bottom: 1rem;">7-Day Mood History</h3>
+                <div id="moodHistory" class="mood-history">
+                    <p class="text-muted">Check in daily to see your pattern</p>
+                </div>
+            </div>
         </div>
     </div>
 
-    <!-- Stats -->
-    <div class="card">
-        <div class="stat-box">
-            <div class="stat-label">Current Streak</div>
-            <div class="streak-counter" id="streakCounter">0</div>
-            <div class="stat-label">days</div>
-        </div>
-        
-        <div style="margin-top: 2rem;">
-            <h3 style="color: var(--deep-blue); margin-bottom: 1rem;">7-Day Mood History</h3>
-            <div id="moodHistory" class="mood-history">
-                <p class="text-muted">Check in daily to see your pattern</p>
-            </div>
+    <div class="dashboard-side-column">
+        <div id="predictionCard" class="card prediction-card" style="display:none; background: linear-gradient(135deg, var(--primary-blue) 0%, #f5f0ff 100%);">
+            <h3 style="color: var(--deep-blue); margin-bottom: 0.75rem;">🔮 Today's Mood Forecast</h3>
+            <p id="predictionText" style="color: var(--dark-gray); font-size: 1rem; margin: 0;"></p>
+            <p id="predictionTrend" style="margin-top: 0.75rem; font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0;"></p>
         </div>
     </div>
 </div>
@@ -96,5 +106,8 @@
     <p id="dailyTip" style="color: var(--dark-gray); margin: 0;">Take a deep breath. You're doing better than you think.</p>
 </div>
 
+{% endblock %}
+
+{% block extra_js %}
 <script src="{{ url_for('static', filename='js/home.js') }}"></script>
 {% endblock %}

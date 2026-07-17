@@ -5,24 +5,35 @@ let userLanguage = 'english';
 
 // Initialize app on page load
 document.addEventListener('DOMContentLoaded', function() {
-    initializeApp();
+    window.userReadyPromise = initializeApp();
 });
 
-function initializeApp() {
-    // Get or create user
-    let storedUserId = localStorage.getItem('userId');
-    let storedLanguage = localStorage.getItem('userLanguage') || 'english';
-    
+async function initializeApp() {
+    // Read either key format (main.js uses 'userId', auth.html uses 'user_id')
+    let storedUserId = localStorage.getItem('userId') || localStorage.getItem('user_id');
+    let storedLanguage = localStorage.getItem('userLanguage') || localStorage.getItem('language') || 'english';
+
     if (storedUserId) {
-        userId = storedUserId;
-        userLanguage = storedLanguage;
-        document.getElementById('languageToggle').value = userLanguage;
+        try {
+            await API.getUser(storedUserId);
+            userId = storedUserId;
+            userLanguage = storedLanguage;
+            // Normalize to one key format
+            localStorage.setItem('userId', userId);
+            localStorage.setItem('userLanguage', userLanguage);
+            const toggle = document.getElementById('languageToggle');
+            if (toggle) toggle.value = userLanguage;
+        } catch (error) {
+            localStorage.removeItem('userId');
+            localStorage.removeItem('user_id');
+            localStorage.removeItem('userLanguage');
+            localStorage.removeItem('language');
+            await createUser();
+        }
     } else {
-        // Create anonymous user
-        createUser();
+        await createUser();
     }
-    
-    // Set up language toggle
+
     const languageToggle = document.getElementById('languageToggle');
     if (languageToggle) {
         languageToggle.addEventListener('change', function(e) {
@@ -36,7 +47,7 @@ function createUser() {
         language: 'english'
     };
     
-    fetch('/api/user', {
+    return fetch('/api/user', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'

@@ -21,6 +21,8 @@
                 <a href="/journal" class="nav-link {% if request.path == '/journal' %}active{% endif %}">Journal</a>
             </div>
             <div class="nav-controls">
+                <a href="/auth?mode=login" class="nav-auth-btn nav-auth-btn-secondary">Login</a>
+                <a href="/auth?mode=signup" class="nav-auth-btn nav-auth-btn-primary">Sign up</a>
                 <select id="languageToggle" class="language-select">
                     <option value="english">English</option>
                     <option value="hinglish">Hinglish</option>
@@ -38,6 +40,7 @@
         <p class="crisis-notice">In crisis? Call: Pakistan Crisis Helpline 0345-5000-500</p>
     </footer>
 
+    <script src="{{ url_for('static', filename='js/api.js') }}"></script>
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     {% block extra_js %}{% endblock %}
 </body>

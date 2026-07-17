@@ -13,7 +13,9 @@ from config import config
 from models import db, User, MoodEntry, JournalEntry, ChatHistory, ExerciseCompletion
 from chatbot import DilSeChatbot
 from exercises import get_exercises, get_exercise_by_id, get_all_exercise_names, get_mood_emoji
+from predictor import predict_mood
 import traceback
+
 
 
 # Initialize Flask app
@@ -29,6 +31,27 @@ db.init_app(app)
 
 # Initialize chatbot
 chatbot = None
+
+
+def get_or_create_session_user(user_id=None):
+    """Resolve the active user from the URL, session, or create an anonymous one."""
+    if user_id is not None:
+        user = db.session.get(User, user_id)
+        if user:
+            session['user_id'] = user.id
+            return user
+
+    session_user_id = session.get('user_id')
+    if session_user_id:
+        user = db.session.get(User, session_user_id)
+        if user:
+            return user
+
+    user = User(language_preference='english')
+    db.session.add(user)
+    db.session.commit()
+    session['user_id'] = user.id
+    return user
 
 
 @app.before_request
@@ -59,8 +82,8 @@ def make_shell_context():
 
 @app.route('/')
 def index():
-    if not session.get('user_id') and not request.args.get('anon'):
-        return redirect('/auth')
+    if not session.get('user_id'):
+        return render_template('auth.html')
     return render_template('home.html')
 
 @app.route('/auth')
@@ -152,7 +175,7 @@ def update_language(user_id):
 @app.route('/api/user/<int:user_id>/mood', methods=['POST'])
 def create_mood_entry(user_id):
     """Create a mood entry for today"""
-    user = User.query.get(user_id)
+    user = get_or_create_session_user(user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
@@ -164,15 +187,16 @@ def create_mood_entry(user_id):
         return jsonify({'error': 'Mood must be between 1 and 5'}), 400
     
     today = datetime.now().date()
+    active_user_id = user.id
     
     # Check if mood already exists for today
-    existing = MoodEntry.query.filter_by(user_id=user_id, date=today).first()
+    existing = MoodEntry.query.filter_by(user_id=active_user_id, date=today).first()
     if existing:
         existing.mood = mood
         existing.note = note
         existing.timestamp = datetime.utcnow()
     else:
-        entry = MoodEntry(user_id=user_id, mood=mood, date=today, note=note)
+        entry = MoodEntry(user_id=active_user_id, mood=mood, date=today, note=note)
         db.session.add(entry)
     
     db.session.commit()
@@ -188,7 +212,7 @@ def create_mood_entry(user_id):
 @app.route('/api/user/<int:user_id>/mood', methods=['GET'])
 def get_mood_history(user_id):
     """Get mood history for user"""
-    user = User.query.get(user_id)
+    user = get_or_create_session_user(user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
@@ -196,7 +220,7 @@ def get_mood_history(user_id):
     since_date = datetime.now().date() - timedelta(days=days)
     
     moods = MoodEntry.query.filter(
-        MoodEntry.user_id == user_id,
+        MoodEntry.user_id == user.id,
         MoodEntry.date >= since_date
     ).order_by(MoodEntry.date).all()
     
@@ -209,7 +233,7 @@ def get_mood_history(user_id):
 @app.route('/api/user/<int:user_id>/streak', methods=['GET'])
 def get_streak(user_id):
     """Get user's current streak of mood check-ins"""
-    user = User.query.get(user_id)
+    user = get_or_create_session_user(user_id)
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
@@ -218,7 +242,7 @@ def get_streak(user_id):
     current_date = today
     
     while True:
-        mood = MoodEntry.query.filter_by(user_id=user_id, date=current_date).first()
+        mood = MoodEntry.query.filter_by(user_id=user.id, date=current_date).first()
         if not mood:
             break
         streak += 1
@@ -381,22 +405,6 @@ def get_exercise_history(user_id):
     if not user:
         return jsonify({'error': 'User not found'}), 404
     
-    days = request.args.get('days', 30, type=int)
-    since_date = datetime.now() - timedelta(days=days)
-    
-    completions = ExerciseCompletion.query.filter(
-        ExerciseCompletion.user_id == user_id,
-        ExerciseCompletion.timestamp >= since_date
-    ).order_by(ExerciseCompletion.timestamp.desc()).all()
-    
-    return jsonify({
-        'completions': [c.to_dict() for c in completions],
-        'count': len(completions)
-    }), 200
-
-
-# ---- Journal ----
-
 @app.route('/api/user/<int:user_id>/journal', methods=['POST'])
 def create_journal_entry(user_id):
     """Create a journal entry"""
@@ -519,6 +527,32 @@ def get_journal_prompts():
         'language': language
     }), 200
 
+# ==================== Prediction ====================
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    username = data.get('username')
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({'success': False, 'error': 'User not found. Please create an account first.'}), 200
+    session['user_id'] = user.id
+    return jsonify({
+        'success': True,
+        'user_id': user.id,
+        'username': user.username,
+        'language': user.language_preference
+    })
+
+
+@app.route('/api/user/<int:user_id>/mood-prediction', methods=['GET'])
+def get_mood_prediction(user_id):
+    user = get_or_create_session_user(user_id)
+    if not user:
+        return jsonify({'error': 'User not found'}), 404
+    prediction = predict_mood(user.id)
+    return jsonify(prediction), 200
+
 
 # ==================== Error Handlers ====================
 
@@ -535,6 +569,7 @@ def internal_error(e):
     return jsonify({'error': 'Internal server error'}), 500
 
 
+
 # ==================== Initialization ====================
 
 @app.cli.command()
@@ -544,27 +579,11 @@ def init_db():
     print('Initialized the database.')
 
 
+
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
     
     app.run(debug=True, host='0.0.0.0', port=5000)
 
-@app.route('/auth')
-def auth_page():
-    return render_template('auth.html')
-
-@app.route('/api/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    username = data.get('username')
-    user = User.query.filter_by(username=username).first()
-    if not user:
-        return jsonify({'error': 'User not found'}), 404
-    session['user_id'] = user.id
-    return jsonify({
-        'success': True,
-        'user_id': user.id,
-        'username': user.username,
-        'language': user.language_preference
-    })
