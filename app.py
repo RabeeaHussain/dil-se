@@ -17,7 +17,16 @@ from predictor import predict_mood
 import traceback
 
 
+import sys
+print("Python executable:", sys.executable)
 
+try:
+    from groq import Groq
+    print("Groq imported successfully")
+except Exception as e:
+    print("Groq import failed:", e)
+    Groq = None
+    
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
@@ -28,6 +37,8 @@ app.config.from_object(config[env])
 
 # Initialize database
 db.init_app(app)
+with app.app_context():
+    db.create_all()
 
 # Initialize chatbot
 chatbot = None
