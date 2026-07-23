@@ -1,51 +1,72 @@
 from models import MoodEntry
 from datetime import datetime, timedelta
+from sklearn.linear_model import LinearRegression
+import numpy as np
+
 
 def predict_mood(user_id):
     """
-    Simple weighted average prediction based on recent mood history.
-    Returns a dict with predicted mood and confidence message.
+    Predict tomorrow's mood using Linear Regression.
+    Works with as little as 3 mood entries.
     """
+
     today = datetime.now().date()
-    
-    # Fetch last 14 days of mood entries
+
+    # Fetch last 14 days of moods
     entries = MoodEntry.query.filter(
         MoodEntry.user_id == user_id,
         MoodEntry.date >= today - timedelta(days=14)
-    ).order_by(MoodEntry.date.desc()).all()
+    ).order_by(MoodEntry.date.asc()).all()
 
+    # Need at least 3 points to fit a regression line
     if len(entries) < 3:
         return {
             "predicted_mood": None,
-            "message": "Check in a few more days to unlock mood predictions.",
+            "message": "Add at least 3 mood entries to unlock AI predictions.",
             "confidence": "low"
         }
 
-    # Weighted average — recent days count more
-    weights = [2 if i < 3 else 1 for i in range(len(entries))]
-    weighted_sum = sum(e.mood * w for e, w in zip(entries, weights))
-    total_weight = sum(weights)
-    predicted = round(weighted_sum / total_weight, 1)
+    # X = day numbers
+    X = np.array(range(len(entries))).reshape(-1, 1)
 
-    # Trend: compare last 3 days vs previous 4
-    recent = [e.mood for e in entries[:3]]
-    older  = [e.mood for e in entries[3:7]] if len(entries) >= 7 else recent
-    trend = sum(recent) / len(recent) - sum(older) / len(older)
+    # y = mood values
+    y = np.array([entry.mood for entry in entries])
 
-    if trend > 0.5:
-        trend_label = "improving 📈"
-    elif trend < -0.5:
-        trend_label = "dipping 📉"
+    # Train Linear Regression model
+    model = LinearRegression()
+    model.fit(X, y)
+
+    # Predict tomorrow
+    tomorrow = np.array([[len(entries)]])
+    prediction = model.predict(tomorrow)[0]
+
+    # Keep prediction within valid mood range
+    prediction = max(1, min(5, round(prediction, 1)))
+
+    mood_labels = {
+        1: "Terrible",
+        2: "Bad",
+        3: "Okay",
+        4: "Good",
+        5: "Great"
+    }
+
+    rounded = round(prediction)
+
+    # Determine trend from regression slope
+    slope = model.coef_[0]
+
+    if slope > 0.2:
+        trend = "improving 📈"
+    elif slope < -0.2:
+        trend = "declining 📉"
     else:
-        trend_label = "steady ➡️"
-
-    mood_labels = {1: "Terrible", 2: "Bad", 3: "Okay", 4: "Good", 5: "Great"}
-    mood_rounded = max(1, min(5, round(predicted)))
+        trend = "stable ➡️"
 
     return {
-        "predicted_mood": predicted,
-        "predicted_label": mood_labels[mood_rounded],
-        "trend": trend_label,
-        "message": f"Based on your recent check-ins, you might feel {mood_labels[mood_rounded]} today. Your mood has been {trend_label}.",
-        "confidence": "medium" if len(entries) >= 7 else "low"
+        "predicted_mood": prediction,
+        "predicted_label": mood_labels[rounded],
+        "trend": trend,
+        "message": f"Our AI predicts your mood tomorrow may be {mood_labels[rounded]}. Your overall mood trend appears to be {trend}.",
+        "confidence": "medium" if len(entries) >= 5 else "low"
     }
